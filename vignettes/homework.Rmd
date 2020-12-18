@@ -23,6 +23,7 @@ y = rnorm(20)#Generate 5 random numbers that obey the standard normal distributi
 plot(x,y)#Draw a scatter plot of X and y
 ```
 
+
 ## Question 2
 
 The 3rd example should contain at least a couple of LaTeX formulas.

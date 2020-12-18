@@ -13,5 +13,5 @@ RoxygenNote: 7.1.1
 Encoding: UTF-8
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
-URL: http://github.com/yan-xc/StatComp20080
-BugReports: http://github.com/yan-xc/StatComp20080/issues
+URL: https://github.com/yan-xc/StatComp20080
+BugReports: https://github.com/yan-xc/StatComp20080/issues
