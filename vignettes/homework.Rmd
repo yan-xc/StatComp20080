@@ -29,9 +29,11 @@ The 2nd example should contains texts and at least one table.
 
 ## Answer
 
-```{r tables-mtcars}
-a = read.csv("D:/data/health.csv", header = T)#Read in data
-knitr::kable(a[1:10,], caption = 'Health')#List the top 10 rows of data
+```{r}
+data("pressure");
+names(pressure)
+# knitr::kable(pressure)
+print(pressure)
 ```
 
 ## Question 3
