@@ -754,145 +754,6 @@ out2=mean(replicate(m,expr = {
 print(round(c(count5_test=out1,permutation_test=out2),3))
 ```
 
-## Question
-
-Design experiments for evaluating the performance of the NN, energy, and ball methods in various situations.
-
-## Answer
-
-(1) Unequal variances and equal expectations
-
-```{r}
-library(RANN)
-library(MASS)
-library(boot)
-library(Ball)
-library(energy)
-Tn=function(z,ix,sizes,k){
-  n1=sizes[1];n2=sizes[2];n=n1+n2
-  z=z[ix,]
-  NN=nn2(data=z,k=k+1)
-  block1=NN$nn.idx[1:n1,-1]
-  block2=NN$nn.idx[(n1+1):n,-1]
-  i1=sum(block1<n1+.5)
-  i2=sum(block2>n1+.5)
-  (i1+i2)/(k*n)
-}
-n1=n2=50
-n=n1+n2
-N=c(n1,n2)
-R=999
-m=1e3
-k=3
-p=2
-eqdist.nn=function(z,sizes,k){
-  boot.obj=boot(data = z,statistic = Tn,R=R,sim = "permutation",sizes=sizes,k=k)
-  ts=c(boot.obj$t0,boot.obj$t)
-  p.value=mean(ts>=ts[1])
-  list(statistic=ts[1],p.value=p.value)
-}
-p.values1=matrix(nrow=m,ncol=3)
-for (i in 1:m) {
-  x=matrix(rnorm(n1*p),ncol=p)
-  y=cbind(rnorm(n2,0,.5),rnorm(n2))
-  z=rbind(x,y)
-  p.values1[i,1]=eqdist.nn(z,N,k)$p.value#NN test
-  p.values1[i,2]=eqdist.etest(z,sizes = N,R=R)$p.value# energy test
-  p.values1[i,3]=bd.test(x=x,y=y,R=R,seed=i*12345)$p.value# Ball test
-}
-alpha=0.1;
-pow1=colMeans(p.values1<alpha)
-pow1
-
-```
-
-(2) Unequal variances and unequal expectations
-
-```{r}
-p.values2=matrix(nrow=m,ncol=3)
-for (i in 1:m) {
-  x=matrix(rnorm(n1*p),ncol=p);
-  y=cbind(rnorm(n2),rnorm(n2,0.5,1.5));
-  z=rbind(x,y)
-  p.values2[i,1]=eqdist.nn(z,N,k)$p.value
-  p.values2[i,2]=eqdist.etest(z,sizes = N,R=R)$p.value
-  p.values2[i,3]=bd.test(x=x,y=y,R=R,,seed=i*12345)$p.value
-}
-alpha=0.1;
-pow2=colMeans(p.values2<alpha)
-pow2
-```
-
-As can be seen from the above results, ball method could be more powerful for non-location family distribution. When the variance is different and the expectation is the same, the effect of the energy method is the worst. But when the expectation and variance are both different, the effect of the NN method is the worst.
-
-(3) Non-normal distributions: t distribution with 1 df (heavy-tailed distribution), bimodel distribution (mixture of two normal distributions)
-
-```{r}
-p.values3=matrix(nrow=m,ncol=3)
-for (i in 1:m) {
-  lambda=0.5
-  x=as.vector(rt(n1,1))#t distribution with 1 df
-  y=as.vector(lambda*rnorm(n2)+(1-lambda)*rnorm(n2,0,2))#bimodel distribution
-  z=c(x,y)
-  o=rep(0,length(z))
-  z=as.data.frame(cbind(z,o))
-  p.values3[i,1]=eqdist.nn(z,N,k)$p.value
-  p.values3[i,2]=eqdist.etest(z,sizes = N,R=R)$p.value
-  p.values3[i,3]=bd.test(x=x,y=y,R=R,seed=i*12345)$p.value
-}
-alpha=0.1;
-pow3=colMeans(p.values3<alpha)
-pow3
-```
-
-As can be seen from the above results, When the distribution is different, energy method could be more powerful.
-
-(4) Unbalanced samples
-
-```{r}
-library(RANN)
-library(MASS)
-library(boot)
-library(Ball)
-library(energy)
-Tn=function(z,ix,sizes,k){
-  n1=sizes[1];n2=sizes[2];n=n1+n2
-  z=z[ix,]
-  NN=nn2(data=z,k=k+1)
-  block1=NN$nn.idx[1:n1,-1]
-  block2=NN$nn.idx[(n1+1):n,-1]
-  i1=sum(block1<n1+.5)
-  i2=sum(block2>n1+.5)
-  (i1+i2)/(k*n)
-}
-n1=10;n2=100# Different sample sizes
-n=n1+n2
-N=c(n1,n2)
-R=999
-m=1e3
-k=3
-p=2
-eqdist.nn=function(z,sizes,k){
-  boot.obj=boot(data = z,statistic = Tn,R=R,sim = "permutation",sizes=sizes,k=k)
-  ts=c(boot.obj$t0,boot.obj$t)
-  p.value=mean(ts>=ts[1])
-  list(statistic=ts[1],p.value=p.value)
-}
-p.values4=matrix(nrow=m,ncol=3)
-for (i in 1:m) {
-  x=matrix(rnorm(n1*p),ncol=p)
-  y=cbind(rnorm(n2),rnorm(n2,0.5,1.5))
-  z=rbind(x,y)
-  p.values4[i,1]=eqdist.nn(z,N,k)$p.value
-  p.values4[i,2]=eqdist.etest(z,sizes = N,R=R)$p.value
-  p.values4[i,3]=bd.test(x=x,y=y,R=R,seed=i*12345)$p.value
-}
-alpha=0.1;
-pow4=colMeans(p.values4<alpha)
-pow4
-```
-
-Comparing the above results with the results of (2), we can find that the accuracy of the test will decrease significantly when the samples are unbalanced. 
 
 #hw7
 
@@ -1258,38 +1119,6 @@ abline(h=-2.5,lty = ,col='blue')
 plot(rwR4,type = 'l',ylab = "x",xlab = "sigma=16")
 abline(h=2.5,lty = 1,col='blue')
 abline(h=-2.5,lty = 1,col='blue')
-
-#Rcpp function for  Exercise 9.4
-
-library(Rcpp)
-Rcpp::sourceCpp('E:/tjjs/hw9/rw.cpp')
-
-n=2e3
-sigma=c(.05,.3,2,16)
-x0=25
-rwC1=Metropolis_c(n,x0,sigma[1])
-rwC2=Metropolis_c(n,x0,sigma[2])
-rwC3=Metropolis_c(n,x0,sigma[3])
-rwC4=Metropolis_c(n,x0,sigma[4])
-
-
-plot(rwC1,type = 'l',ylab = "x",xlab = "sigma=0.05")
-plot(rwC2,type = 'l',ylab = "x",xlab = "sigma=0.5")
-abline(h=2.5,lty = 1,col='blue')
-abline(h=-2.5,lty = 1,col='blue')
-plot(rwC3,type = 'l',ylab = "x",xlab = "sigma=2")
-abline(h=2.5,lty = 1,col='blue')
-abline(h=-2.5,lty = ,col='blue')
-plot(rwC4,type = 'l',ylab = "x",xlab = "sigma=16")
-abline(h=2.5,lty = 1,col='blue')
-abline(h=-2.5,lty = 1,col='blue')
-
-#qqplot
-
-qqplot(rwR1[-(1:500)],rwC1[-(1:500)],xlab = "R",ylab = "Rcpp",main="qqplot for sigma=0.05")#Abandon burn-in period
-qqplot(rwR2[-(1:500)],rwC2[-(1:500)],xlab = "R",ylab = "Rcpp",main="qqplot for sigma=0.3")
-qqplot(rwR3[-(1:500)],rwC3[-(1:500)],xlab = "R",ylab = "Rcpp",main="qqplot for sigma=2")
-qqplot(rwR4[-(1:500)],rwC4[-(1:500)],xlab = "R",ylab = "Rcpp",main="qqplot for sigma=16")
 ```
 
 (2)Campare the computation time of the two functions with the function “microbenchmark”.
@@ -1297,7 +1126,7 @@ qqplot(rwR4[-(1:500)],rwC4[-(1:500)],xlab = "R",ylab = "Rcpp",main="qqplot for s
 
 ```{r}
 library(microbenchmark)
-ts=microbenchmark(rw1R=Metropolis(n,x0,sigma[1]),rw1C=Metropolis_c(n,x0,sigma[1]),rw2R=Metropolis(n,x0,sigma[2]),rw2C=Metropolis_c(n,x0,sigma[2]),rw3R=Metropolis(n,x0,sigma[3]),rw3C=Metropolis_c(n,x0,sigma[3]),rw4R=Metropolis(n,x0,sigma[4]),rw4C=Metropolis_c(n,x0,sigma[4]))
+ts=microbenchmark(rw1R=Metropolis(n,x0,sigma[1]),rw1C=Metropolis(n,x0,sigma[2]),rw2R=Metropolis(n,x0,sigma[3]),rw2C=Metropolis(n,x0,sigma[4]))
 ts
 ```
 
