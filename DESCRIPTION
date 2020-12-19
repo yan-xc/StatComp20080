@@ -1,0 +1,18 @@
+Package: StatComp20080
+Type: Package
+Title: StatComp20080
+Version: 1.0
+Date: 2020-12-16
+Author: Xuechen Yan 
+Maintainer: Xuechen Yan<yanxc12@163.com>
+Description: This is a R package for Statistics Computation Course in fall 2020.
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.5), Ball, DAAG, MASS, RANN, boot, bootstrap, energy, microbenchmark, nloptr, stats, base
+LinkingTo: Rcpp
+RoxygenNote: 7.1.1
+Encoding: UTF-8
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr 
+URL: http://github.com/yan-xc/StatComp20080
+BugReports: http://github.com/yan-xc/StatComp20080/issues
+
